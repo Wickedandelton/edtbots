@@ -972,18 +972,19 @@
     __extends(statusCommand, _super);
 
     function statusCommand() {
-      _ref12 = statusCommand.__super__.constructor.apply(this, arguments);
-      return _ref12;
+      _ref7 = statusCommand.__super__.constructor.apply(this, arguments);
+      return _ref7;
     }
 
     statusCommand.prototype.init = function() {
       this.command = '!status';
       this.parseType = 'exact';
-      return this.rankPrivelege = 'user';
+      return this.rankPrivelege = 'featured';
     };
 
     statusCommand.prototype.functionality = function() {
       var day, hour, launch, lt, meridian, min, month, msg, t, totals;
+
       lt = data.launchTime;
       month = lt.getMonth() + 1;
       day = lt.getDate();
@@ -1000,6 +1001,7 @@
     };
 
     return statusCommand;
+
 
   })(Command);
 
@@ -1083,8 +1085,8 @@
     __extends(lockCommand, _super);
 
     function lockCommand() {
-      _ref16 = lockCommand.__super__.constructor.apply(this, arguments);
-      return _ref16;
+      _ref10 = lockCommand.__super__.constructor.apply(this, arguments);
+      return _ref10;
     }
 
     lockCommand.prototype.init = function() {
@@ -1094,7 +1096,6 @@
     };
 
     lockCommand.prototype.functionality = function() {
-      API.sendChat('');
       return data.lockBooth();
     };
 
@@ -1350,22 +1351,34 @@
     __extends(skipCommand, _super);
 
     function skipCommand() {
-      _ref25 = skipCommand.__super__.constructor.apply(this, arguments);
-      return _ref25;
+      _ref14 = skipCommand.__super__.constructor.apply(this, arguments);
+      return _ref14;
     }
 
     skipCommand.prototype.init = function() {
       this.command = '!pula';
       this.parseType = 'exact';
-      return this.rankPrivelege = 'mod';
+      this.rankPrivelege = 'bouncer';
+      return window.lastSkipTime;
     };
 
     skipCommand.prototype.functionality = function() {
-      return API.moderateForceSkip();
+      var currentTime, millisecondsPassed;
+
+      currentTime = new Date();
+      if (!window.lastSkipTime) {
+        API.moderateForceSkip();
+        return window.lastSkipTime = currentTime;
+      } else {
+        millisecondsPassed = Math.round(currentTime.getTime() - window.lastSkipTime.getTime());
+        if (millisecondsPassed > 10000) {
+          window.lastSkipTime = currentTime;
+          return API.moderateForceSkip();
+        }
+      }
     };
 
     return skipCommand;
-
   })(Command);
 
   whyMehCommand = (function(_super) {
@@ -1393,62 +1406,12 @@
 
   })(Command);
 
-  commandsCommand = (function(_super) {
-    __extends(commandsCommand, _super);
-
-    function commandsCommand() {
-      _ref27 = commandsCommand.__super__.constructor.apply(this, arguments);
-      return _ref27;
-    }
-
-    commandsCommand.prototype.init = function() {
-      this.command = '!commands';
-      this.parseType = 'exact';
-      return this.rankPrivelege = 'host';
-    };
-
-    commandsCommand.prototype.functionality = function() {
-      var allowedUserLevels, c, cc, cmd, msg, user, _i, _j, _len, _len1, _ref28, _ref29;
-      allowedUserLevels = [];
-      user = API.getUser(this.msgData.fromID);
-      window.capturedUser = user;
-      if (user.permission > 5) {
-        allowedUserLevels = ['user', 'mod', 'host'];
-      } else if (user.permission > 2) {
-        allowedUserLevels = ['user', 'mod'];
-      } else {
-        allowedUserLevels = ['user'];
-      }
-      msg = '';
-      for (_i = 0, _len = cmds.length; _i < _len; _i++) {
-        cmd = cmds[_i];
-        c = new cmd('');
-        if (_ref28 = c.rankPrivelege, __indexOf.call(allowedUserLevels, _ref28) >= 0) {
-          if (typeof c.command === "string") {
-            msg += c.command + ', ';
-          } else if (typeof c.command === "object") {
-            _ref29 = c.command;
-            for (_j = 0, _len1 = _ref29.length; _j < _len1; _j++) {
-              cc = _ref29[_j];
-              msg += cc + ', ';
-            }
-          }
-        }
-      }
-      msg = msg.substring(0, msg.length - 2);
-      return API.sendChat(msg);
-    };
-
-    return commandsCommand;
-
-  })(Command);
-
   disconnectLookupCommand = (function(_super) {
     __extends(disconnectLookupCommand, _super);
 
     function disconnectLookupCommand() {
-      _ref28 = disconnectLookupCommand.__super__.constructor.apply(this, arguments);
-      return _ref28;
+      _ref15 = disconnectLookupCommand.__super__.constructor.apply(this, arguments);
+      return _ref15;
     }
 
     disconnectLookupCommand.prototype.init = function() {
@@ -1458,25 +1421,26 @@
     };
 
     disconnectLookupCommand.prototype.functionality = function() {
-      var cmd, dcHour, dcLookupId, dcMeridian, dcMins, dcSongsAgo, dcTimeStr, dcUser, disconnectInstances, givenName, id, recentDisconnect, resp, u, _i, _len, _ref29, _ref30;
+      var cmd, dcHour, dcLookupId, dcMeridian, dcMins, dcSongsAgo, dcTimeStr, dcUser, disconnectInstances, givenName, id, recentDisconnect, resp, u, _i, _len, _ref16, _ref17;
+
       cmd = this.msgData.message;
       if (cmd.length > 11) {
         givenName = cmd.slice(11);
-        _ref29 = data.users;
-        for (id in _ref29) {
-          u = _ref29[id];
+        _ref16 = data.users;
+        for (id in _ref16) {
+          u = _ref16[id];
           if (u.getUser().username === givenName) {
             dcLookupId = id;
             disconnectInstances = [];
-            _ref30 = data.userDisconnectLog;
-            for (_i = 0, _len = _ref30.length; _i < _len; _i++) {
-              dcUser = _ref30[_i];
+            _ref17 = data.userDisconnectLog;
+            for (_i = 0, _len = _ref17.length; _i < _len; _i++) {
+              dcUser = _ref17[_i];
               if (dcUser.id === dcLookupId) {
                 disconnectInstances.push(dcUser);
               }
             }
             if (disconnectInstances.length > 0) {
-              resp = u.getUser().username + ' disconectou' + disconnectInstances.length.toString() + ' time';
+              resp = u.getUser().username + ' disconectou ' + disconnectInstances.length.toString() + ' ';
               if (disconnectInstances.length === 1) {
                 resp += '. ';
               } else {
@@ -1504,7 +1468,7 @@
               API.sendChat(resp);
               return;
             } else {
-              API.sendChat("" + u.getUser().username + " não disconectou.");
+              API.sendChat(" " + u.getUser().username + " não disconectou.");
               return;
             }
           }
@@ -1515,24 +1479,26 @@
 
     return disconnectLookupCommand;
 
+
   })(Command);
 
   voteRatioCommand = (function(_super) {
     __extends(voteRatioCommand, _super);
 
     function voteRatioCommand() {
-      _ref29 = voteRatioCommand.__super__.constructor.apply(this, arguments);
-      return _ref29;
+      _ref16 = voteRatioCommand.__super__.constructor.apply(this, arguments);
+      return _ref16;
     }
 
     voteRatioCommand.prototype.init = function() {
       this.command = '!voteratio';
       this.parseType = 'startsWith';
-      return this.rankPrivelege = 'mod';
+      return this.rankPrivelege = 'manager';
     };
 
     voteRatioCommand.prototype.functionality = function() {
       var msg, name, r, u, votes;
+
       r = new RoomHelper();
       msg = this.msgData.message;
       if (msg.length > 12) {
@@ -1540,22 +1506,22 @@
         u = r.lookupUser(name);
         if (u !== false) {
           votes = r.userVoteRatio(u);
-          msg = u.username + " has wooted " + votes['woot'].toString() + " time";
+          msg = u.username + " :+1: " + votes['woot'].toString() + " vez";
           if (votes['woot'] === 1) {
             msg += ', ';
           } else {
-            msg += 's, ';
+            msg += 'es, ';
           }
-          msg += "and meh'd " + votes['meh'].toString() + " time";
+          msg += "e :-1: " + votes['meh'].toString() + " veze";
           if (votes['meh'] === 1) {
             msg += '. ';
           } else {
-            msg += 's. ';
+            msg += 'es. ';
           }
-          msg += "O seu vote ratio é:" + votes['positiveRatio'].toString() + ".";
+          msg += "O seu vote ratio é: " + votes['positiveRatio'].toString() + ".";
           return API.sendChat(msg);
         } else {
-          return API.sendChat("Não parece ter alguém com esse nome de '" + name + "'");
+          return API.sendChat("Não parece ter alguém com esse nome de'" + name + "'");
         }
       } else {
         return API.sendChat("Você quer alguma coisa? Ou você está apenas tentando me irritar.");
@@ -1564,6 +1530,63 @@
 
     return voteRatioCommand;
 
+  })(Command);
+
+  staffCommand = (function(_super) {
+    __extends(staffCommand, _super);
+
+    function staffCommand() {
+      _ref18 = staffCommand.__super__.constructor.apply(this, arguments);
+      return _ref18;
+    }
+
+    staffCommand.prototype.init = function() {
+      this.command = '!staff';
+      this.parseType = 'exact';
+      this.rankPrivelege = 'user';
+      return window.lastActiveStaffTime;
+    };
+
+    staffCommand.prototype.staff = function() {
+      var now, staff, staffAfk, stringstaff, user, _i, _len;
+
+      staff = API.getStaff();
+      now = new Date();
+      stringstaff = "";
+      for (_i = 0, _len = staff.length; _i < _len; _i++) {
+        user = staff[_i];
+        if (user.permission > 1) {
+          staffAfk = now.getTime() - data.users[user.id].getLastActivity().getTime();
+          if (staffAfk < (60 * 60 * 1000)) {
+            stringstaff += "@" + user.username + " ";
+          }
+        }
+      }
+      if (stringstaff.length === 0) {
+        stringstaff = "Aff pqp não tem staff ativo :'(";
+      }
+      return stringstaff;
+    };
+
+    staffCommand.prototype.functionality = function() {
+      var currentTime, millisecondsPassed, thestaff;
+
+      thestaff = this.staff();
+      currentTime = new Date();
+      if (!window.lastActiveStaffTime) {
+        API.sendChat(thestaff);
+        return window.lastActiveStaffTime = currentTime;
+      } else {
+        millisecondsPassed = currentTime.getTime() - window.lastActiveStaffTime.getTime();
+        if (millisecondsPassed > 10000) {
+          window.lastActiveStaffTime = currentTime;
+          return API.sendChat(thestaff);
+        }
+      }
+    };
+
+    return staffCommand;
+  
   })(Command);
 
   avgVoteRatioCommand = (function(_super) {
@@ -1635,11 +1658,12 @@
 
   handleNewSong = function(obj) {
     var songId;
+    
     data.intervalMessages();
     if (data.currentsong === null) {
       data.newSong();
     } else {
-      API.sendChat("/em: Just played " + data.currentsong.title + " by " + data.currentsong.author + ". Stats: Woots: " + data.currentwoots + ", Mehs: " + data.currentmehs + ", Loves: " + data.currentcurates + ".");
+      API.sendChat("/em: " + data.currentsong.title + " por " + data.currentsong.author + ". :+1: " + data.currentwoots + ", :-1: " + data.currentmehs + ", :heart: " + data.currentcurates + ".");
       data.newSong();
       document.getElementById("button-vote-positive").click();
     }
